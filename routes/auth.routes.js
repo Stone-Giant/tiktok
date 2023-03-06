@@ -11,6 +11,7 @@ router.use(function (req, res, next) {
   next();
 });
 
+// routes
 router.post(
     '/api/auth/signup', 
     [

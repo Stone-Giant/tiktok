@@ -7,7 +7,8 @@ checkDuplicateUsernameOrEmail = async (req, res, next) => {
     // Email
     user = await User.findOne({
       where: {
-        email: req.body.email
+        email: req.body.email,
+        status: 1
       }
     });
 

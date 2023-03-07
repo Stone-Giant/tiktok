@@ -1,6 +1,10 @@
 const jwt = require('jsonwebtoken');
 const validator = require('validator');
 const config = require("../config/auth.config.js");
+const db = require("../models");
+const User = db.user;
+const Role = db.role;
+
 
 module.exports = {
     
@@ -33,5 +37,33 @@ module.exports = {
 			res.status(401).json({ error: "Unauthorized! You must be logged in to use this service!" });
 			res.end();
 		}
+	},
+
+	isAdmin: async (req, res, next) => {
+		console.log('isAdmin')
+		try {
+			
+			const user = await User.findByPk(req.userId);
+			console.log(user.dataValues.roles)
+			const roles = await Role.findOne({
+				where: {
+				  id:  user.dataValues.roles
+				},
+			})
+			console.log('roles', roles)
+			if (roles.dataValues.name === "admin") {
+				return next();
+			}
+			
+		
+			return res.status(403).send({
+			  message: "Require Admin Role!",
+			});
+		  } catch (error) {
+			return res.status(500).send({
+			  message: "Unable to validate User role!",
+			});
+		  }
 	}
+
 }

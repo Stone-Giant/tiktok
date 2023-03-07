@@ -6,7 +6,12 @@ const bodyParser = require('body-parser');
 
 app.use(bodyParser.urlencoded({ extended: true }))
 
+// routing functions...
 app.use(require('./routes/auth.routes'));
+app.use(require('./routes/user.routes'));
+app.use(require('./routes/video.routes'));
+app.use(require('./routes/upload.routes'));
+
 app.get("/",(req,res) => {
     connection.query('SELECT * from users LIMIT 1', (err, rows) => {
         if(err) throw err;

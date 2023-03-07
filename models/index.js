@@ -21,6 +21,8 @@ db.sequelize = sequelize;
 
 db.user = require("./user.model.js")(sequelize, Sequelize);
 db.role = require("../models/role.model.js")(sequelize, Sequelize);
+db.upload = require("../models/upload.model.js")(sequelize, Sequelize);
+db.video = require("../models/video.model.js")(sequelize, Sequelize);
 // db.form = require("../models/form.model.js")(sequelize, Sequelize);
 // db.design = require("../models/design.model.js")(sequelize, Sequelize);
 // db.welcome = require("../models/welcome.model.js")(sequelize, Sequelize);

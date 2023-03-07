@@ -9,7 +9,6 @@ import MainCard from 'ui-component/cards/MainCard';
 import TotalIncomeCard from 'ui-component/cards/Skeleton/TotalIncomeCard';
 
 // assets
-import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
 import { IconBrandTiktok } from '@tabler/icons';
 
 // styles

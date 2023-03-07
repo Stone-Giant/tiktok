@@ -1,6 +1,8 @@
+import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -19,7 +21,9 @@ import {
     OutlinedInput,
     TextField,
     Typography,
-    useMediaQuery
+    useMediaQuery,
+    Snackbar,
+    Alert
 } from '@mui/material';
 
 // third party
@@ -36,18 +40,71 @@ import { strengthColor, strengthIndicator } from 'utils/password-strength';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
+//config
+import config from 'config.js';
+
 // ===========================|| FIREBASE - REGISTER ||=========================== //
 
 const FirebaseRegister = ({ ...others }) => {
     const theme = useTheme();
     const scriptedRef = useScriptRef();
     const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
-    const customization = useSelector((state) => state.customization);
+
+    const navigate = useNavigate();
+
+    const [emailError, setEmailError] = useState(false);
+    const [userInfo, setUserInfo] = useState({ firstName: '', lastName: '', email: '', password: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [checked, setChecked] = useState(true);
-
     const [strength, setStrength] = useState(0);
     const [level, setLevel] = useState();
+    const [modalstate, setModalState] = React.useState({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
+    const { message, severity, open } = modalstate;
+
+    const handleClose = () => {
+        setModalState({ ...modalstate, open: false });
+    };
+
+    const handleSubmitSignUp = (e) => {
+        e.preventDefault();
+        console.log('form submitted', userInfo);
+        axios
+            .post(config.backendUrl + 'api/auth/signup', userInfo)
+            .then((res) => {
+                setEmailError(false);
+                console.log(res);
+                setModalState({ open: true, message: res.data.message, severity: 'success' });
+                setTimeout(() => {
+                    // 👇 Redirects to about page, note the `replace: true`
+                    navigate('/login', { replace: true });
+                }, 1000);
+            })
+            .catch((error) => {
+                setEmailError(true);
+                if (error.response.status == 400) {
+                    setModalState({ open: true, message: error.response.data.message, severity: 'warning' });
+                }
+            });
+    };
+    const handleChangeFirstName = (event) => {
+        setUserInfo({ ...userInfo, firstName: event.target.value });
+    };
+
+    const handleChangeLastName = (event) => {
+        setUserInfo({ ...userInfo, lastName: event.target.value });
+    };
+
+    const handleChangeEmail = (event) => {
+        setUserInfo({ ...userInfo, email: event.target.value });
+    };
+
+    const handleChangePassword = (event) => {
+        setUserInfo({ ...userInfo, password: event.target.value });
+    };
 
     const googleHandler = async () => {
         console.error('Register');
@@ -73,6 +130,11 @@ const FirebaseRegister = ({ ...others }) => {
 
     return (
         <>
+            <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'right' }} autoHideDuration={2000} onClose={handleClose} open={open}>
+                <Alert severity={severity} onClose={handleClose} sx={{ width: '100%' }}>
+                    {message}
+                </Alert>
+            </Snackbar>
             <Grid container direction="column" justifyContent="center" spacing={2}>
                 <Grid item xs={12}>
                     <AnimateButton>
@@ -162,6 +224,7 @@ const FirebaseRegister = ({ ...others }) => {
                                     type="text"
                                     defaultValue=""
                                     sx={{ ...theme.typography.customInput }}
+                                    onChange={handleChangeFirstName}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -173,6 +236,7 @@ const FirebaseRegister = ({ ...others }) => {
                                     type="text"
                                     defaultValue=""
                                     sx={{ ...theme.typography.customInput }}
+                                    onChange={handleChangeLastName}
                                 />
                             </Grid>
                         </Grid>
@@ -181,11 +245,15 @@ const FirebaseRegister = ({ ...others }) => {
                             <OutlinedInput
                                 id="outlined-adornment-email-register"
                                 type="email"
-                                value={values.email}
+                                // value={values.email}
                                 name="email"
                                 onBlur={handleBlur}
-                                onChange={handleChange}
+                                onChange={(e) => {
+                                    handleChangeEmail(e);
+                                    handleChange(e);
+                                }}
                                 inputProps={{}}
+                                error={emailError}
                             />
                             {touched.email && errors.email && (
                                 <FormHelperText error id="standard-weight-helper-text--register">
@@ -208,6 +276,7 @@ const FirebaseRegister = ({ ...others }) => {
                                 label="Password"
                                 onBlur={handleBlur}
                                 onChange={(e) => {
+                                    handleChangePassword(e);
                                     handleChange(e);
                                     changePassword(e.target.value);
                                 }}
@@ -291,6 +360,7 @@ const FirebaseRegister = ({ ...others }) => {
                                     type="submit"
                                     variant="contained"
                                     color="secondary"
+                                    onClick={handleSubmitSignUp}
                                 >
                                     Sign up
                                 </Button>

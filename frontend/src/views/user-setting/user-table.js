@@ -18,10 +18,9 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Fade from '@mui/material/Fade';
 import { Chip } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { visuallyHidden } from '@mui/utils';
 
-import { IconUserX, IconUserCheck, IconUserExclamation, IconLockOpen } from '@tabler/icons';
+import { IconUserX, IconUserCheck, IconLockOpen } from '@tabler/icons';
 
 function createData(email, create_date, update_date, status, action) {
     return {
@@ -255,25 +254,19 @@ export default function UserTable() {
                 {props.status > 0 ? (
                     <Tooltip title="Disactive">
                         <IconButton aria-label="fingerprint" color="warning">
-                            <IconUserExclamation />
+                            <IconUserX />
                         </IconButton>
                     </Tooltip>
                 ) : (
                     <Tooltip title="Active">
                         <IconButton aria-label="fingerprint" color="success">
-                            <IconUserX />
+                            <IconUserCheck />
                         </IconButton>
                     </Tooltip>
                 )}
                 <Tooltip title="Format Password">
                     <IconButton aria-label="fingerprint" color="primary">
                         <IconLockOpen />
-                    </IconButton>
-                </Tooltip>
-
-                <Tooltip title="Delete">
-                    <IconButton aria-label="fingerprint" color="error">
-                        <IconUserX />
                     </IconButton>
                 </Tooltip>
             </>

@@ -1,5 +1,7 @@
+import * as React from 'react';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -18,7 +20,9 @@ import {
     OutlinedInput,
     Stack,
     Typography,
-    useMediaQuery
+    useMediaQuery,
+    Snackbar,
+    Alert
 } from '@mui/material';
 
 // third party
@@ -35,15 +39,59 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 import Google from 'assets/images/icons/social-google.svg';
 
+//config
+import config from 'config.js';
+
 // ============================|| FIREBASE - LOGIN ||============================ //
 
 const FirebaseLogin = ({ ...others }) => {
     const theme = useTheme();
     const scriptedRef = useScriptRef();
     const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
-    const customization = useSelector((state) => state.customization);
-    const [checked, setChecked] = useState(true);
 
+    const navigate = useNavigate();
+
+    const [checked, setChecked] = useState(true);
+    const [userInfo, setUserInfo] = useState({ email: '', password: '' });
+    const [modalstate, setModalState] = React.useState({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
+    const { message, severity, open } = modalstate;
+
+    const handleClose = () => {
+        setModalState({ ...modalstate, open: false });
+    };
+
+    const handleSubmitSignIn = (e) => {
+        e.preventDefault();
+        axios
+            .post(config.backendUrl + 'api/auth/signin', userInfo)
+            .then((res) => {
+                setModalState({ open: true, message: res.data.message, severity: 'success' });
+                setTimeout(() => {
+                    // 👇 Redirects to about page, note the `replace: true`
+                    navigate('/dashboard', { replace: true });
+                }, 1000);
+            })
+            .catch((error) => {
+                if (error.response.status == 400) {
+                    setModalState({ open: true, message: error.response.data.message, severity: 'warning' });
+                }
+                if (error.response.status == 401) {
+                    setModalState({ open: true, message: error.response.data.message, severity: 'warning' });
+                }
+            });
+    };
+
+    const handleChangeEmail = (event) => {
+        setUserInfo({ ...userInfo, email: event.target.value });
+    };
+
+    const handleChangePassword = (event) => {
+        setUserInfo({ ...userInfo, password: event.target.value });
+    };
     const googleHandler = async () => {
         console.error('Login');
     };
@@ -59,6 +107,11 @@ const FirebaseLogin = ({ ...others }) => {
 
     return (
         <>
+            <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'right' }} autoHideDuration={2000} onClose={handleClose} open={open}>
+                <Alert severity={severity} onClose={handleClose} sx={{ width: '100%' }}>
+                    {message}
+                </Alert>
+            </Snackbar>
             <Grid container direction="column" justifyContent="center" spacing={2}>
                 <Grid item xs={12}>
                     <AnimateButton>
@@ -120,8 +173,8 @@ const FirebaseLogin = ({ ...others }) => {
 
             <Formik
                 initialValues={{
-                    email: 'info@codedthemes.com',
-                    password: '123456',
+                    email: '',
+                    password: '',
                     submit: null
                 }}
                 validationSchema={Yup.object().shape({
@@ -145,7 +198,7 @@ const FirebaseLogin = ({ ...others }) => {
                 }}
             >
                 {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
-                    <form noValidate onSubmit={handleSubmit} {...others}>
+                    <form noValidate onSubmit={handleSubmit} {...others} action="localhost:5000/api/user/getAllUser">
                         <FormControl fullWidth error={Boolean(touched.email && errors.email)} sx={{ ...theme.typography.customInput }}>
                             <InputLabel htmlFor="outlined-adornment-email-login">Email Address / Username</InputLabel>
                             <OutlinedInput
@@ -154,8 +207,11 @@ const FirebaseLogin = ({ ...others }) => {
                                 value={values.email}
                                 name="email"
                                 onBlur={handleBlur}
-                                onChange={handleChange}
                                 label="Email Address / Username"
+                                onChange={(e) => {
+                                    handleChangeEmail(e);
+                                    handleChange(e);
+                                }}
                                 inputProps={{}}
                             />
                             {touched.email && errors.email && (
@@ -177,7 +233,10 @@ const FirebaseLogin = ({ ...others }) => {
                                 value={values.password}
                                 name="password"
                                 onBlur={handleBlur}
-                                onChange={handleChange}
+                                onChange={(e) => {
+                                    handleChangePassword(e);
+                                    handleChange(e);
+                                }}
                                 endAdornment={
                                     <InputAdornment position="end">
                                         <IconButton
@@ -232,6 +291,7 @@ const FirebaseLogin = ({ ...others }) => {
                                     type="submit"
                                     variant="contained"
                                     color="secondary"
+                                    onClick={handleSubmitSignIn}
                                 >
                                     Sign in
                                 </Button>

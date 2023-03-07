@@ -1,6 +1,6 @@
-const db = require('../models');
-const moment = require('moment');
-const config = require('../config/auth.config');
+const db = require("../models");
+const moment = require("moment");
+const config = require("../config/auth.config");
 // const { OAuth2Client } = require('google-auth-library');
 // const client = new OAuth2Client(
 //   '382447144454-18kdqo71vffauq6c6q2t53bi8u7artae.apps.googleusercontent.com'
@@ -9,8 +9,8 @@ const User = db.user;
 const Role = db.role;
 const Op = db.Sequelize.Op;
 
-var jwt = require('jsonwebtoken');
-var bcrypt = require('bcryptjs');
+var jwt = require("jsonwebtoken");
+var bcrypt = require("bcryptjs");
 
 exports.signup = async (req, res) => {
   // Save User to Database
@@ -19,29 +19,23 @@ exports.signup = async (req, res) => {
     const user = await User.create({
       status: 1,
       email: req.body.email,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
       password: bcrypt.hashSync(req.body.password, 8),
     });
 
     if (req.body.roles) {
-      
       const roles = await Role.findOne({
         where: {
-          name:  req.body.roles
+          name: req.body.roles,
         },
       }).then((role) => {
-        user.update(
-          {roles: role.dataValues.id},
-          {where: req.body.email}
-        )
-        res.send({ message: "User registered successfully!" });
-      })
-      
+        user.update({ roles: role.dataValues.id }, { where: req.body.email });
+        res.status(200).send({ message: "User registered successfully!" });
+      });
     } else {
-      user.update(
-        {roles: 1},
-        {where: req.body.email}
-      )
-      res.send({ message: "User registered successfully!" });
+      user.update({ roles: 1 }, { where: req.body.email });
+      res.status(200).send({ message: "User registered successfully!" });
     }
   } catch (error) {
     res.status(500).send({ message: error.message });
@@ -49,21 +43,21 @@ exports.signup = async (req, res) => {
 };
 
 exports.verify = (req, res) => {
-  console.log('verofy')
+  console.log("verofy");
   User.findOne({
     where: {
       email: req.body.email,
-      status: 1
+      status: 1,
     },
   }).then((user) => {
     if (user) {
-      res.status(400).send({
-        message: 'Failed! Email is already in use!',
+      res.status(200).send({
+        message: "Failed! Email is already in use.",
       });
       return;
     } else {
       res.status(200).send({
-        message: 'No use',
+        message: "No use",
       });
     }
   });
@@ -138,12 +132,12 @@ exports.signin = async (req, res) => {
     const user = await User.findOne({
       where: {
         email: req.body.email,
-        status: 1
+        status: 1,
       },
     });
 
     if (!user) {
-      return res.status(404).send({ message: "User Not found." });
+      return res.status(400).send({ message: "Not exsited user." });
     }
 
     const passwordIsValid = bcrypt.compareSync(
@@ -153,7 +147,7 @@ exports.signin = async (req, res) => {
 
     if (!passwordIsValid) {
       return res.status(401).send({
-        message: "Invalid Password!",
+        message: "Invalid password.",
       });
     }
 
@@ -161,9 +155,8 @@ exports.signin = async (req, res) => {
       expiresIn: 86400, // 24 hours
     });
 
-
-
     return res.status(200).send({
+      message: "Welcome.",
       email: user.email,
       accessToken: token,
     });

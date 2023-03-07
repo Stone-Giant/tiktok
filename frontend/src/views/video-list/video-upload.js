@@ -1,6 +1,4 @@
-import * as React from 'react';
 import { Box, Grid, TextField, Button } from '@mui/material';
-import MuiTypography from '@mui/material/Typography';
 import SubCard from 'ui-component/cards/SubCard';
 
 export default function VideoUpload() {

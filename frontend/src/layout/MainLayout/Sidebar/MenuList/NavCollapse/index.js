@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 
 // material-ui
@@ -18,7 +17,6 @@ import { IconChevronDown, IconChevronUp } from '@tabler/icons';
 
 const NavCollapse = ({ menu, level }) => {
     const theme = useTheme();
-    const customization = useSelector((state) => state.customization);
 
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState(null);

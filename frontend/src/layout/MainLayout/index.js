@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 
 // material-ui
@@ -11,7 +12,8 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import navigation from 'menu-items';
 import { drawerWidth } from 'store/constant';
-import { SET_MENU } from 'store/actions';
+import { SET_MENU, LOGIN } from 'store/actions';
+import { useNavigate } from 'react-router-dom';
 
 // assets
 import { IconChevronRight } from '@tabler/icons';
@@ -63,6 +65,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 // ==============================|| MAIN LAYOUT ||============================== //
 
 const MainLayout = () => {
+    const loginState = useSelector((state) => state.customization.user);
     const theme = useTheme();
     const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
     // Handle left drawer
@@ -71,6 +74,16 @@ const MainLayout = () => {
     const handleLeftDrawerToggle = () => {
         dispatch({ type: SET_MENU, opened: !leftDrawerOpened });
     };
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!localStorage.getItem('user')) {
+            navigate('/login', { replace: true });
+        } else {
+            dispatch({ type: LOGIN, userInfo: JSON.parse(localStorage.getItem('user')) });
+        }
+    }, [localStorage.getItem('user')]);
 
     return (
         <Box sx={{ display: 'flex' }}>

@@ -70,25 +70,27 @@ const FirebaseRegister = ({ ...others }) => {
     };
 
     const handleSubmitSignUp = (e) => {
-        e.preventDefault();
-        console.log('form submitted', userInfo);
-        axios
-            .post(config.backendUrl + 'api/auth/signup', userInfo)
-            .then((res) => {
-                setEmailError(false);
-                console.log(res);
-                setModalState({ open: true, message: res.data.message, severity: 'success' });
-                setTimeout(() => {
-                    // 👇 Redirects to about page, note the `replace: true`
-                    navigate('/login', { replace: true });
-                }, 1000);
-            })
-            .catch((error) => {
-                setEmailError(true);
-                if (error.response.status == 400) {
-                    setModalState({ open: true, message: error.response.data.message, severity: 'warning' });
-                }
-            });
+        if (userInfo.email && userInfo.password && userInfo.firstName && userInfo.lastName) {
+            e.preventDefault();
+            console.log('form submitted', userInfo);
+            axios
+                .post(config.backendUrl + 'api/auth/signup', userInfo)
+                .then((res) => {
+                    setEmailError(false);
+                    console.log(res);
+                    setModalState({ open: true, message: res.data.message, severity: 'success' });
+                    setTimeout(() => {
+                        // 👇 Redirects to about page, note the `replace: true`
+                        navigate('/login', { replace: true });
+                    }, 1000);
+                })
+                .catch((error) => {
+                    setEmailError(true);
+                    if (error.response.status == 400) {
+                        setModalState({ open: true, message: error.response.data.message, severity: 'warning' });
+                    }
+                });
+        }
     };
     const handleChangeFirstName = (event) => {
         setUserInfo({ ...userInfo, firstName: event.target.value });

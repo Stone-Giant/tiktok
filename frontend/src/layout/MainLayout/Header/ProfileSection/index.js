@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -27,7 +28,9 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
-import User1 from 'assets/images/users/user-round.svg';
+
+//logout action
+import { LOGOUT } from 'store/actions';
 
 // assets
 import { IconLogout, IconSettings, IconUser } from '@tabler/icons';
@@ -35,8 +38,11 @@ import { IconLogout, IconSettings, IconUser } from '@tabler/icons';
 // ==============================|| PROFILE MENU ||============================== //
 
 const ProfileSection = () => {
+    const customization = useSelector((state) => state.customization);
     const theme = useTheme();
     const navigate = useNavigate();
+
+    const dispatch = useDispatch();
 
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [open, setOpen] = useState(false);
@@ -45,7 +51,8 @@ const ProfileSection = () => {
      * */
     const anchorRef = useRef(null);
     const handleLogout = async () => {
-        console.log('Logout');
+        dispatch({ type: LOGOUT });
+        localStorage.setItem('user', '');
     };
 
     const handleClose = (event) => {
@@ -100,7 +107,6 @@ const ProfileSection = () => {
                 }}
                 icon={
                     <Avatar
-                        src={User1}
                         sx={{
                             ...theme.typography.mediumAvatar,
                             margin: '8px 0 8px 8px !important',
@@ -109,7 +115,7 @@ const ProfileSection = () => {
                         ref={anchorRef}
                         aria-controls={open ? 'menu-list-grow' : undefined}
                         aria-haspopup="true"
-                        color="inherit"
+                        color="secondary"
                     />
                 }
                 label={<IconSettings stroke={1.5} size="1.5rem" color={theme.palette.primary.main} />}
@@ -147,10 +153,10 @@ const ProfileSection = () => {
                                         <Stack>
                                             <Stack direction="row" spacing={0.5} alignItems="center">
                                                 <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                                                    Johne Doe
+                                                    {customization.user.email}
                                                 </Typography>
                                             </Stack>
-                                            <Typography variant="subtitle2">Project Admin</Typography>
+                                            <Typography variant="subtitle2">Admin User</Typography>
                                         </Stack>
                                         {/* <OutlinedInput
                                             sx={{ width: '100%', pr: 1, pl: 2, my: 2 }}

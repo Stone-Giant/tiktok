@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -33,6 +34,9 @@ import { Formik } from 'formik';
 import useScriptRef from 'hooks/useScriptRef';
 import AnimateButton from 'ui-component/extended/AnimateButton';
 
+//login action
+import { LOGIN } from 'store/actions';
+
 // assets
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -48,6 +52,8 @@ const FirebaseLogin = ({ ...others }) => {
     const theme = useTheme();
     const scriptedRef = useScriptRef();
     const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
+
+    const dispatch = useDispatch();
 
     const navigate = useNavigate();
 
@@ -65,24 +71,31 @@ const FirebaseLogin = ({ ...others }) => {
     };
 
     const handleSubmitSignIn = (e) => {
-        e.preventDefault();
-        axios
-            .post(config.backendUrl + 'api/auth/signin', userInfo)
-            .then((res) => {
-                setModalState({ open: true, message: res.data.message, severity: 'success' });
-                setTimeout(() => {
-                    // 👇 Redirects to about page, note the `replace: true`
-                    navigate('/dashboard', { replace: true });
-                }, 1000);
-            })
-            .catch((error) => {
-                if (error.response.status == 400) {
-                    setModalState({ open: true, message: error.response.data.message, severity: 'warning' });
-                }
-                if (error.response.status == 401) {
-                    setModalState({ open: true, message: error.response.data.message, severity: 'warning' });
-                }
-            });
+        if (userInfo.email && userInfo.password) {
+            e.preventDefault();
+            axios
+                .post(config.backendUrl + 'api/auth/signin', userInfo)
+                .then((res) => {
+                    setModalState({ open: true, message: res.data.message, severity: 'success' });
+                    //store redux
+                    dispatch({ type: LOGIN, userInfo: res.data });
+                    //store localstorage
+                    localStorage.setItem('user', JSON.stringify(res.data));
+                    setTimeout(() => {
+                        // 👇 Redirects to about page, note the `replace: true`
+                        navigate('/dashboard', { replace: true });
+                    }, 1000);
+                })
+                .catch((error) => {
+                    console.log(error);
+                    if (error.response.status == 400) {
+                        setModalState({ open: true, message: error.response.data.message, severity: 'warning' });
+                    }
+                    if (error.response.status == 401) {
+                        setModalState({ open: true, message: error.response.data.message, severity: 'warning' });
+                    }
+                });
+        }
     };
 
     const handleChangeEmail = (event) => {

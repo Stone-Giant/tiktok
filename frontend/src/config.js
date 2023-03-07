@@ -3,6 +3,7 @@ const config = {
     // like '/berry-material-react/react/default'
     basename: '/',
     defaultPath: '/dashboard/',
+    backendUrl: 'http://192.168.105.68:5000/',
     fontFamily: `'Inter', sans-serif`,
     borderRadius: 12
 };

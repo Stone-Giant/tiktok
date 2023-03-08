@@ -17,27 +17,29 @@ import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Fade from '@mui/material/Fade';
-import { Chip } from '@mui/material';
+import { Chip, Button } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
+import { useDispatch, useSelector } from 'react-redux';
+import Moment from 'moment';
 
-import { IconUserX, IconUserCheck, IconLockOpen } from '@tabler/icons';
+import axios from 'axios';
 
-function createData(email, create_date, update_date, status, action) {
+import config from 'config';
+
+import { IconUserX, IconUserCheck, IconLockOpen, IconUserSearch } from '@tabler/icons';
+import { ManageAccountsOutlined, PeopleAltOutlined } from '@mui/icons-material';
+import { useEffect } from 'react';
+
+function createData(email, name, create_date, update_date, roles, status) {
     return {
         email,
+        name,
         create_date,
         update_date,
-        status,
-        action
+        roles,
+        status
     };
 }
-
-const rows = [
-    createData('workbee49@gmail.com', '2022/03/02', '2022/03/02', true, 12.2),
-    createData('workbese49@gmail.com', '2022/03/02', '2022/03/02', false, 12.2),
-    createData('workbeae49@gmail.com', '2022/03/02', '2022/03/02', true, 12.2),
-    createData('woaee49@gmail.com', '2022/03/02', '2022/03/02', true, 12.2)
-];
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -72,34 +74,46 @@ function stableSort(array, comparator) {
 const headCells = [
     {
         id: 'email',
-        numeric: false,
+        align: 'left',
         disablePadding: true,
         label: 'User Email'
     },
     {
+        id: 'name',
+        align: 'center',
+        disablePadding: false,
+        label: 'User Name'
+    },
+    {
         id: 'create_date',
-        numeric: true,
+        align: 'center',
         disablePadding: false,
         label: 'Entry date'
     },
     {
         id: 'update_date',
-        numeric: true,
+        align: 'center',
         disablePadding: false,
         label: 'Updated date'
     },
     {
-        id: 'status',
-        numeric: true,
+        id: 'roles',
+        align: 'center',
         disablePadding: false,
-        label: 'User Status'
+        label: 'Roles'
     },
     {
-        id: 'action',
-        numeric: true,
+        id: 'status',
+        align: 'right',
         disablePadding: false,
-        label: 'Action'
+        label: 'User Status'
     }
+    // {
+    //     id: 'action',
+    //     numeric: true,
+    //     disablePadding: false,
+    //     label: 'Action'
+    // }
 ];
 
 function EnhancedTableHead(props) {
@@ -111,7 +125,7 @@ function EnhancedTableHead(props) {
     return (
         <TableHead>
             <TableRow>
-                <TableCell padding="checkbox">
+                {/* <TableCell padding="checkbox">
                     <Checkbox
                         color="primary"
                         indeterminate={numSelected > 0 && numSelected < rowCount}
@@ -121,11 +135,11 @@ function EnhancedTableHead(props) {
                             'aria-label': 'select all desserts'
                         }}
                     />
-                </TableCell>
+                </TableCell> */}
                 {headCells.map((headCell) => (
                     <TableCell
                         key={headCell.id}
-                        align={headCell.numeric ? 'right' : 'left'}
+                        align={headCell.align}
                         padding={headCell.disablePadding ? 'none' : 'normal'}
                         sortDirection={orderBy === headCell.id ? order : false}
                     >
@@ -170,16 +184,16 @@ function EnhancedTableToolbar(props) {
                             pr: { xs: 1, sm: 1 },
                             py: 0,
                             ...(numSelected > 0 && {
-                                bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity)
+                                bgcolor: (theme) => alpha(theme.palette.success.main, theme.palette.action.activatedOpacity)
                             })
                         }}
                     >
                         <Typography sx={{ flex: '1 1 100%' }} color="inherit" variant="subtitle1" component="div">
                             {numSelected} selected
                         </Typography>
-                        <Tooltip title="Delete">
-                            <IconButton aria-label="fingerprint" color="error">
-                                <IconUserX />
+                        <Tooltip title="Active">
+                            <IconButton aria-label="fingerprint" color="success">
+                                <IconUserCheck />
                             </IconButton>
                         </Tooltip>
                     </Toolbar>
@@ -196,11 +210,45 @@ EnhancedTableToolbar.propTypes = {
 };
 
 export default function UserTable() {
+    const accessToken = useSelector((state) => state.customization.user.accessToken);
+    React.useEffect(() => {
+        axios
+            .get(config.backendUrl + 'api/user/getAllUser', {
+                headers: {
+                    authorization: 'bear ' + accessToken
+                }
+            })
+            .then((res) => {
+                let temp = [];
+                res.data[0].data.map((item) =>
+                    temp.push(
+                        createData(
+                            item.email,
+                            item.firstName + ' ' + item.lastName,
+                            item.createdAt,
+                            item.updatedAt,
+                            item.roles,
+                            item.status
+                        )
+                    )
+                );
+                setRows(temp);
+                console.log(temp);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
+        console.log(rows);
+    }, []);
+
+    // getUserData(accessToken);
     const [order, setOrder] = React.useState('asc');
     const [orderBy, setOrderBy] = React.useState('calories');
     const [selected, setSelected] = React.useState([]);
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    const [rows, setRows] = React.useState([]);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -251,21 +299,21 @@ export default function UserTable() {
     const ActionTool = (props) => {
         return (
             <>
-                {props.status > 0 ? (
+                {/* {props.status > 0 ? (
                     <Tooltip title="Disactive">
-                        <IconButton aria-label="fingerprint" color="warning">
+                        <IconButton color="secondary">
                             <IconUserX />
                         </IconButton>
                     </Tooltip>
                 ) : (
                     <Tooltip title="Active">
-                        <IconButton aria-label="fingerprint" color="success">
+                        <IconButton color="secondary">
                             <IconUserCheck />
                         </IconButton>
                     </Tooltip>
-                )}
+                )} */}
                 <Tooltip title="Format Password">
-                    <IconButton aria-label="fingerprint" color="primary">
+                    <IconButton color="primary">
                         <IconLockOpen />
                     </IconButton>
                 </Tooltip>
@@ -274,7 +322,55 @@ export default function UserTable() {
     };
 
     const StatusChip = (props) => {
-        return <>{props.status > 0 ? <Chip label="active" color="success" /> : <Chip label="disactive" color="warning" />}</>;
+        const [chipState, setChipState] = React.useState({ status: 1, color: 'success', label: 'actived', icon: <IconUserCheck /> });
+        useEffect(() => {
+            if (props.status > 0) {
+                setChipState({ color: 'success', label: 'actived', icon: <IconUserCheck />, status: 1 });
+            } else {
+                setChipState({ color: 'error', label: 'disactived', icon: <IconUserX />, status: 0 });
+            }
+        }, []);
+        const changesss = () => {
+            if (chipState.status > 0) {
+                setChipState({ color: 'error', label: 'disactived', icon: <IconUserX />, status: 0 });
+            } else {
+                setChipState({ color: 'success', label: 'actived', icon: <IconUserCheck />, status: 1 });
+            }
+            axios
+                .post(
+                    config.backendUrl + 'api/user/setState',
+                    { user_email: props.email },
+                    {
+                        headers: {
+                            authorization: 'bear ' + accessToken
+                        }
+                    }
+                )
+                .then((res) => {
+                    console.log(res);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        };
+
+        return (
+            <>
+                <Chip label={chipState.label} color={chipState.color} onClick={changesss} icon={chipState.icon} />
+            </>
+        );
+    };
+
+    const RolesChip = (props) => {
+        return (
+            <>
+                {props.roles > 1 ? (
+                    <Chip label="Admin" color="primary" variant="outlined" icon={<ManageAccountsOutlined />} />
+                ) : (
+                    <Chip label="Commen" color="secondary" variant="outlined" icon={<PeopleAltOutlined />} />
+                )}
+            </>
+        );
     };
 
     return (
@@ -307,7 +403,7 @@ export default function UserTable() {
                                             key={row.email}
                                             selected={isItemSelected}
                                         >
-                                            <TableCell padding="checkbox">
+                                            {/* <TableCell padding="checkbox">
                                                 <Checkbox
                                                     onClick={(event) => handleClick(event, row.email)}
                                                     color="primary"
@@ -316,19 +412,23 @@ export default function UserTable() {
                                                         'aria-labelledby': labelId
                                                     }}
                                                 />
-                                            </TableCell>
+                                            </TableCell> */}
                                             <TableCell component="th" id={labelId} scope="row" padding="none">
                                                 {row.email}
                                             </TableCell>
-                                            <TableCell align="right">{row.create_date}</TableCell>
-                                            <TableCell align="right">{row.update_date}</TableCell>
+                                            <TableCell align="center">{row.name}</TableCell>
+                                            <TableCell align="center">{Moment(row.create_date).format('YYYY-MM-DD')}</TableCell>
+                                            <TableCell align="center">{Moment(row.update_date).format('YYYY-MM-DD')}</TableCell>
+                                            <TableCell align="center">
+                                                <RolesChip roles={row.roles} />
+                                            </TableCell>
                                             <TableCell align="right">
-                                                <StatusChip status={row.status} />
+                                                <StatusChip status={row.status} email={row.email} />
                                             </TableCell>
 
-                                            <TableCell align="right">
+                                            {/* <TableCell align="right">
                                                 <ActionTool status={row.status} />
-                                            </TableCell>
+                                            </TableCell> */}
                                         </TableRow>
                                     );
                                 })}

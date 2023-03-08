@@ -90,9 +90,10 @@ const FirebaseLogin = ({ ...others }) => {
                     console.log(error);
                     if (error.response.status == 400) {
                         setModalState({ open: true, message: error.response.data.message, severity: 'warning' });
-                    }
-                    if (error.response.status == 401) {
+                    } else if (error.response.status == 401) {
                         setModalState({ open: true, message: error.response.data.message, severity: 'warning' });
+                    } else if (error.response.status == 500) {
+                        setModalState({ open: true, message: 'Internal server error', severity: 'error' });
                     }
                 });
         }

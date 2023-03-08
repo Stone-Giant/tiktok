@@ -132,34 +132,37 @@ exports.signin = async (req, res) => {
     const user = await User.findOne({
       where: {
         email: req.body.email,
-        status: 1,
       },
     });
 
-    if (!user) {
-      return res.status(400).send({ message: "Not exsited user." });
-    }
+    if (user.status > 0) {
+      if (!user) {
+        return res.status(400).send({ message: "Not exsited user." });
+      }
 
-    const passwordIsValid = bcrypt.compareSync(
-      req.body.password,
-      user.password
-    );
+      const passwordIsValid = bcrypt.compareSync(
+        req.body.password,
+        user.password
+      );
 
-    if (!passwordIsValid) {
-      return res.status(401).send({
-        message: "Invalid password.",
+      if (!passwordIsValid) {
+        return res.status(401).send({
+          message: "Invalid password.",
+        });
+      }
+
+      const token = jwt.sign({ id: user.id }, config.secret, {
+        expiresIn: 86400, // 24 hours
       });
+
+      return res.status(200).send({
+        message: "Welcome.",
+        email: user.email,
+        accessToken: token,
+      });
+    } else {
+      return res.status(400).send({ message: "Deactivited user." });
     }
-
-    const token = jwt.sign({ id: user.id }, config.secret, {
-      expiresIn: 86400, // 24 hours
-    });
-
-    return res.status(200).send({
-      message: "Welcome.",
-      email: user.email,
-      accessToken: token,
-    });
   } catch (error) {
     return res.status(500).send({ message: error.message });
   }

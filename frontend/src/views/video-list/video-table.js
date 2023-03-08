@@ -19,6 +19,7 @@ import FirstPageIcon from '@mui/icons-material/FirstPage';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import LastPageIcon from '@mui/icons-material/LastPage';
+import VideoScriptEditor from './videoScript-editor';
 
 import { IconEdit } from '@tabler/icons';
 
@@ -123,52 +124,55 @@ export default function VideoTable() {
     };
 
     return (
-        <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
-                <TableBody>
-                    {(rowsPerPage > 0 ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : rows).map((row) => (
-                        <TableRow key={row.url}>
-                            <TableCell component="th" scope="row" padding="none" sx={{ width: '100px' }}>
-                                <img src={row.thumnail_url} alt="video Thumbnail" width="100px" height="100px" />
-                            </TableCell>
-                            <TableCell component="th" scope="row">
-                                <Button sx={{ textTransform: 'none' }} href="#">
-                                    {row.url}
-                                </Button>
-                            </TableCell>
-                            <TableCell style={{ width: 160 }} align="right">
-                                <EditTool />
-                            </TableCell>
-                        </TableRow>
-                    ))}
+        <>
+            <VideoScriptEditor />
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
+                    <TableBody>
+                        {(rowsPerPage > 0 ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : rows).map((row) => (
+                            <TableRow key={row.url}>
+                                <TableCell component="th" scope="row" padding="none" sx={{ width: '100px' }}>
+                                    <img src={row.thumnail_url} alt="video Thumbnail" width="100px" height="100px" />
+                                </TableCell>
+                                <TableCell component="th" scope="row">
+                                    <Button sx={{ textTransform: 'none' }} href="#">
+                                        {row.url}
+                                    </Button>
+                                </TableCell>
+                                <TableCell style={{ width: 160 }} align="right">
+                                    <EditTool />
+                                </TableCell>
+                            </TableRow>
+                        ))}
 
-                    {emptyRows > 0 && (
-                        <TableRow style={{ height: 53 * emptyRows }}>
-                            <TableCell colSpan={6} />
+                        {emptyRows > 0 && (
+                            <TableRow style={{ height: 53 * emptyRows }}>
+                                <TableCell colSpan={6} />
+                            </TableRow>
+                        )}
+                    </TableBody>
+                    <TableFooter>
+                        <TableRow>
+                            <TablePagination
+                                rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+                                colSpan={3}
+                                count={rows.length}
+                                rowsPerPage={rowsPerPage}
+                                page={page}
+                                SelectProps={{
+                                    inputProps: {
+                                        'aria-label': 'rows per page'
+                                    },
+                                    native: true
+                                }}
+                                onPageChange={handleChangePage}
+                                onRowsPerPageChange={handleChangeRowsPerPage}
+                                ActionsComponent={TablePaginationActions}
+                            />
                         </TableRow>
-                    )}
-                </TableBody>
-                <TableFooter>
-                    <TableRow>
-                        <TablePagination
-                            rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-                            colSpan={3}
-                            count={rows.length}
-                            rowsPerPage={rowsPerPage}
-                            page={page}
-                            SelectProps={{
-                                inputProps: {
-                                    'aria-label': 'rows per page'
-                                },
-                                native: true
-                            }}
-                            onPageChange={handleChangePage}
-                            onRowsPerPageChange={handleChangeRowsPerPage}
-                            ActionsComponent={TablePaginationActions}
-                        />
-                    </TableRow>
-                </TableFooter>
-            </Table>
-        </TableContainer>
+                    </TableFooter>
+                </Table>
+            </TableContainer>
+        </>
     );
 }

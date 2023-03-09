@@ -14,7 +14,6 @@ import FormatItalicOutlinedIcon from '@mui/icons-material/FormatItalicOutlined';
 import FormatUnderlinedOutlinedIcon from '@mui/icons-material/FormatUnderlinedOutlined';
 import CheckOutlinedIcon from '@mui/icons-material/CheckOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-
 export default function AlertDialog() {
     const [open, setOpen] = React.useState(false);
 
@@ -29,6 +28,7 @@ export default function AlertDialog() {
     const [fontFormatState, setFontFormatState] = React.useState(() => []);
     const [fontFamilyState, setFontFamilyState] = React.useState('Inter');
     const [fontSizeState, setFontSizeState] = React.useState(16);
+    const [captionData, setCaptionData] = React.useState([]);
 
     const handleFontFamily = (event) => {
         setFontFamilyState(event.target.value);
@@ -42,41 +42,93 @@ export default function AlertDialog() {
         setFontFormatState(newFormats);
     };
 
-    const CaptionItem = () => {
+    const CaptionItem = (props) => {
         return (
             <>
-                <TextField
-                    hiddenLabel
-                    type="time"
-                    variant="filled"
-                    size="small"
-                    sx={{
-                        '& .MuiInputBase-root': {
-                            bgcolor: 'transparent'
-                        }
-                    }}
-                />
-                <TextField
-                    hiddenLabel
-                    type="time"
-                    variant="filled"
-                    size="small"
-                    sx={{
-                        '& .MuiInputBase-root': {
-                            bgcolor: 'transparent'
-                        }
-                    }}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <TextField
+                        hiddenLabel
+                        variant="filled"
+                        size="small"
+                        value={props.startTime}
+                        sx={{
+                            '& .MuiInputBase-root': {
+                                bgcolor: 'transparent'
+                            }
+                        }}
+                    />
+                    <TextField
+                        hiddenLabel
+                        variant="filled"
+                        size="small"
+                        value={props.endTime}
+                        sx={{
+                            '& .MuiInputBase-root': {
+                                bgcolor: 'transparent'
+                            }
+                        }}
+                    />
+                    <TextField
+                        variant="filled"
+                        hiddenLabel
+                        size="small"
+                        fullWidth
+                        value={props.captionText}
+                        sx={{
+                            '& .MuiInputBase-root': {
+                                bgcolor: 'transparent'
+                            },
+                            '& .MuiInputBase-input': {
+                                fontFamily: `${fontFamilyState}`,
+                                fontWeight: fontFormatState.includes('bold') ? 'bold' : 'normal',
+                                fontStyle: fontFormatState.includes('italic') ? 'italic' : 'normal',
+                                textDecoration: fontFormatState.includes('underlined') ? 'underline' : '',
+                                fontSize: `${fontSizeState}px`
+                            }
+                        }}
+                        rows="1"
+                        placeholder="Input text here."
+                    />
+                </Box>
             </>
         );
     };
 
-    const Cation = () => {
+    const Caption = () => {
+        console.log(captionData);
         return (
             <>
-                <CaptionItem />
+                <Box sx={{ height: '300px', overflowY: 'auto' }}>
+                    {captionData.map((item, itemCount) => {
+                        console.log(item);
+                        return (
+                            <CaptionItem key={itemCount} startTime={item.startTime} endTime={item.endTime} captionText={item.captionText} />
+                        );
+                    })}
+                </Box>
             </>
         );
+    };
+    const showFile = async (e) => {
+        e.preventDefault();
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            let arraydata = e.target.result.split('\n');
+            console.log(arraydata);
+
+            let tmp = [];
+            for (let i = 1; i < arraydata.length - 1; i += 3) {
+                let [start, end] = arraydata[i].split(' --> ');
+                tmp.push({
+                    startTime: start,
+                    endTime: end,
+                    captionText: arraydata[i + 1]
+                });
+            }
+            setCaptionData(tmp);
+            console.log(tmp);
+        };
+        reader.readAsText(e.target.files[0]);
     };
 
     return (
@@ -95,7 +147,8 @@ export default function AlertDialog() {
                 <DialogTitle id="alert-dialog-title" variant="h3">
                     Edit Caption
                 </DialogTitle>
-                <DialogContent sx={{ height: 800 }}>
+                <DialogContent>
+                    <input type="file" onChange={(e) => showFile(e)} />
                     <Box display={'flex'} sx={{ mb: 2, columnGap: '10px', flexWrap: 'wrap' }}>
                         <ToggleButtonGroup value={fontFormatState} onChange={handleFormat} aria-label="text formatting" color="primary">
                             <ToggleButton value="bold" aria-label="bold">
@@ -130,27 +183,7 @@ export default function AlertDialog() {
                             </Select>
                         </FormControl>
                     </Box>
-                    <Cation />
-                    <TextField
-                        variant="filled"
-                        hiddenLabel
-                        size="small"
-                        fullWidth
-                        sx={{
-                            fontFamily: `${fontFamilyState}`,
-                            '& .MuiInputBase-root': {
-                                bgcolor: 'transparent'
-                            },
-                            '& .MuiInputBase-input': {
-                                fontWeight: fontFormatState.includes('bold') ? 'bold' : 'normal',
-                                fontStyle: fontFormatState.includes('italic') ? 'italic' : 'normal',
-                                textDecoration: fontFormatState.includes('underlined') ? 'underline' : '',
-                                fontSize: `${fontSizeState}px`
-                            }
-                        }}
-                        rows="1"
-                        placeholder="Input text here."
-                    />
+                    <Caption />
                 </DialogContent>
                 <DialogActions sx={{ p: 3, pt: 1 }}>
                     <Button onClick={handleClose} variant="outlined" color="secondary" startIcon={<CloseOutlinedIcon />}>

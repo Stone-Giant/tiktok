@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
 
 // material-ui
 import { styled, useTheme } from '@mui/material/styles';
@@ -84,10 +85,19 @@ LinearProgressWithLabel.propTypes = {
 
 const MenuCard = () => {
     const theme = useTheme();
-    const checked = true;
+    const progressState = useSelector((state) => state.customization.progress);
+    let showed = false;
+    if (progressState.step != 'none') {
+        showed = true;
+    } else {
+        showed = false;
+    }
+
+    // const customization = useSelector((state) => state.customization);
+    // console.log(progressState);
 
     return (
-        <Grow in={checked} {...(checked ? { timeout: 1000 } : {})}>
+        <Grow in={showed} {...(showed ? { timeout: 1000 } : {})}>
             <CardStyle>
                 <CardContent sx={{ p: 2 }}>
                     <List sx={{ p: 0, m: 0 }}>
@@ -115,11 +125,11 @@ const MenuCard = () => {
                                         Generating Video
                                     </Typography>
                                 }
-                                secondary={<Typography variant="caption"> 28/23 GB</Typography>}
+                                secondary={<Typography variant="caption"> {progressState.step}</Typography>}
                             />
                         </ListItem>
                     </List>
-                    <LinearProgressWithLabel value={80} />
+                    <LinearProgressWithLabel value={progressState.percent} />
                 </CardContent>
             </CardStyle>
         </Grow>

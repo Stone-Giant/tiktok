@@ -10,7 +10,8 @@ export const initialState = {
     fontFamily: config.fontFamily,
     borderRadius: config.borderRadius,
     opened: true,
-    user: {}
+    user: {},
+    progress: { step: 'none', percent: 0 }
 };
 
 // ==============================|| CUSTOMIZATION REDUCER ||============================== //
@@ -48,6 +49,11 @@ const customizationReducer = (state = initialState, action) => {
             return {
                 ...state,
                 user: {}
+            };
+        case actionTypes.SETPROGRESS:
+            return {
+                ...state,
+                progress: action.progress
             };
         default:
             return state;
